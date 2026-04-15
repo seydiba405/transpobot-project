@@ -27,5 +27,5 @@
 ## Technologies
 - Backend : FastAPI (Python)
 - Base de données : MySQL
-- LLM : OpenAI GPT / Ollama (local)
+- **Ollama** : [Télécharger ici](https://ollama.com/download)
 - Frontend : HTML/CSS/JS vanilla
