@@ -1,184 +1,219 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TranspoBot — Assistant IA Transport</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; }
-  header { background: #1a56db; color: white; padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem; }
-  header h1 { font-size: 1.4rem; }
-  header span { font-size: 2rem; }
-  .container { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
-  .card { background: white; border-radius: 12px; padding: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; }
-  .stat { background: #eff6ff; border-radius: 8px; padding: 0.8rem; text-align: center; }
-  .stat .val { font-size: 1.8rem; font-weight: bold; color: #1a56db; }
-  .stat .lbl { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
-  /* Chat */
-  .chat-box { height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: #f8fafc; }
-  .msg { margin-bottom: 0.8rem; }
-  .msg.user .bubble { background: #1a56db; color: white; margin-left: auto; }
-  .msg.bot .bubble { background: white; border: 1px solid #e2e8f0; }
-  .bubble { display: inline-block; padding: 0.6rem 1rem; border-radius: 12px; max-width: 85%; font-size: 0.9rem; line-height: 1.5; }
-  .msg.user { text-align: right; }
-  .chat-input { display: flex; gap: 0.5rem; }
-  .chat-input input { flex: 1; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.95rem; outline: none; }
-  .chat-input input:focus { border-color: #1a56db; }
-  .chat-input button { background: #1a56db; color: white; border: none; border-radius: 8px; padding: 0.7rem 1.2rem; cursor: pointer; font-size: 0.95rem; }
-  .chat-input button:hover { background: #1e40af; }
-  .sql-preview { background: #1e293b; color: #94a3b8; font-family: monospace; font-size: 0.78rem; padding: 0.6rem; border-radius: 6px; margin-top: 0.4rem; white-space: pre-wrap; }
-  /* Suggestions */
-  .suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.8rem; }
-  .suggestions button { background: #eff6ff; color: #1a56db; border: 1px solid #bfdbfe; border-radius: 20px; padding: 0.3rem 0.8rem; font-size: 0.8rem; cursor: pointer; }
-  .suggestions button:hover { background: #dbeafe; }
-  /* Table résultats */
-  .results table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  .results th { background: #1a56db; color: white; padding: 0.5rem; text-align: left; }
-  .results td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
-  .results tr:hover td { background: #f0f4f8; }
-  h2 { font-size: 1rem; color: #374151; margin-bottom: 0.8rem; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
-  .badge-green { background: #dcfce7; color: #166534; }
-  .badge-orange { background: #fff7ed; color: #9a3412; }
-  .badge-red { background: #fee2e2; color: #991b1b; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TranspoBot — Assistant IA Transport</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; }
+        header { background: #1a56db; color: white; padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem; }
+        header h1 { font-size: 1.4rem; }
+        .container { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+        .card { background: white; border-radius: 12px; padding: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+        .stat { background: #eff6ff; border-radius: 8px; padding: 0.8rem; text-align: center; }
+        .stat .val { font-size: 1.8rem; font-weight: bold; color: #1a56db; }
+        .stat .lbl { font-size: 0.75rem; color: #64748b; }
+        .chat-box { height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: #f8fafc; }
+        .msg { margin-bottom: 0.8rem; display: flex; flex-direction: column; }
+        .msg.user { align-items: flex-end; }
+        .bubble { padding: 0.6rem 1rem; border-radius: 12px; max-width: 85%; font-size: 0.9rem; line-height: 1.5; }
+        .msg.user .bubble { background: #1a56db; color: white; }
+        .msg.bot .bubble { background: white; border: 1px solid #e2e8f0; }
+        .msg.bot .bubble .bot-title { font-weight: 600; margin-bottom: 0.45rem; color: #1f2937; }
+        .chat-inline-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 0.25rem; }
+        .chat-inline-table th { background: #eff6ff; color: #1a56db; text-align: left; padding: 0.35rem; border: 1px solid #dbeafe; }
+        .chat-inline-table td { padding: 0.35rem; border: 1px solid #e2e8f0; color: #334155; }
+        .chat-input { display: flex; gap: 0.5rem; }
+        .chat-input input { flex: 1; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.7rem; outline: none; }
+        .chat-input button { background: #1a56db; color: white; border: none; border-radius: 8px; padding: 0.7rem 1.2rem; cursor: pointer; }
+        .chat-input button:disabled { background: #94a3b8; cursor: not-allowed; }
+        .results table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .results th { background: #1a56db; color: white; padding: 0.5rem; text-align: left; }
+        .results td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+        .badge { padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-orange { background: #fff7ed; color: #9a3412; }
+    </style>
 </head>
 <body>
-<header>
-  <span>🚌</span>
-  <div>
-    <h1>TranspoBot</h1>
-    <small>Assistant IA — Gestion de Transport</small>
-  </div>
-</header>
-
-<div class="container">
-  <!-- Colonne gauche -->
-  <div>
-    <div class="card" style="margin-bottom:1rem">
-      <h2>📊 Tableau de bord</h2>
-      <div class="stats-grid" id="stats">
-        <div class="stat"><div class="val">—</div><div class="lbl">Trajets terminés</div></div>
-        <div class="stat"><div class="val">—</div><div class="lbl">En cours</div></div>
-        <div class="stat"><div class="val">—</div><div class="lbl">Véhicules actifs</div></div>
-        <div class="stat"><div class="val">—</div><div class="lbl">Incidents ouverts</div></div>
-      </div>
+    <header><span>🚌</span><h1>TranspoBot</h1></header>
+    <div class="container">
+        <div>
+            <div class="card">
+                <h2>📊 Dashboard</h2>
+                <div class="stats-grid" id="stats">
+                    <div class="stat"><div class="val">—</div><div class="lbl">Terminés</div></div>
+                    <div class="stat"><div class="val">—</div><div class="lbl">En cours</div></div>
+                    <div class="stat"><div class="val">—</div><div class="lbl">Véhicules</div></div>
+                    <div class="stat"><div class="val">—</div><div class="lbl">Incidents</div></div>
+                </div>
+            </div>
+            <div class="card">
+                <h2>🕒 Trajets récents</h2>
+                <div class="results" id="trajets-table">Chargement...</div>
+            </div>
+        </div>
+        <div class="card">
+            <h2>💬 Assistant IA</h2>
+            <p id="api-status" style="font-size:0.8rem; color:#64748b; margin:0.4rem 0 0.8rem 0;">Vérification du backend...</p>
+            <div class="chat-box" id="chat-box"></div>
+            <div class="chat-input">
+                <input type="text" id="user-input" placeholder="Posez une question...">
+                <button id="send-btn" onclick="sendMessage()">Envoyer</button>
+            </div>
+            <div id="results-section" style="margin-top:1rem; display:none">
+                <h3>📋 Résultats détaillés</h3>
+                <div class="results" id="results-table"></div>
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-      <h2>🕒 Trajets récents</h2>
-      <div class="results" id="trajets-table"><p style="color:#94a3b8;font-size:0.85rem">Chargement...</p></div>
-    </div>
-  </div>
+    <script>
+        const API = window.location.origin.startsWith('http')
+            ? window.location.origin
+            : 'http://127.0.0.1:8000';
 
-  <!-- Colonne droite : Chat -->
-  <div class="card">
-    <h2>💬 Assistant TranspoBot</h2>
-    <div class="suggestions">
-      <button onclick="ask('Combien de trajets ont été effectués cette semaine ?')">Trajets cette semaine</button>
-      <button onclick="ask('Quel chauffeur a le plus de trajets ?')">Meilleur chauffeur</button>
-      <button onclick="ask('Quels véhicules sont en maintenance ?')">Véhicules en maintenance</button>
-      <button onclick="ask('Liste les incidents graves non résolus')">Incidents graves</button>
-      <button onclick="ask('Quelle est la recette totale du mois de mars 2026 ?')">Recette mars 2026</button>
-    </div>
+        function escapeHtml(text = '') {
+            return String(text).replace(/[&<>"']/g, (m) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[m]));
+        }
 
-    <div class="chat-box" id="chat-box">
-      <div class="msg bot">
-        <div class="bubble">👋 Bonjour ! Je suis TranspoBot, votre assistant intelligent.<br>Posez-moi n'importe quelle question sur votre flotte, vos trajets ou vos chauffeurs !</div>
-      </div>
-    </div>
+        function setApiStatus(message, color = '#64748b') {
+            const status = document.getElementById('api-status');
+            status.textContent = message;
+            status.style.color = color;
+        }
 
-    <div class="chat-input">
-      <input type="text" id="user-input" placeholder="Ex: Combien de trajets ce mois-ci ?" onkeypress="if(event.key==='Enter') sendMessage()">
-      <button onclick="sendMessage()">Envoyer ➤</button>
-    </div>
+        async function loadData() {
+            try {
+                const health = await fetch(`${API}/`);
+                if (!health.ok) throw new Error('Backend non joignable');
+                setApiStatus('Backend connecté.', '#166534');
 
-    <div id="results-section" style="margin-top:1rem; display:none">
-      <h2>📋 Résultats</h2>
-      <div class="results" id="results-table"></div>
-    </div>
-  </div>
-</div>
+                // Stats
+                const rs = await fetch(`${API}/api/stats`);
+                if (!rs.ok) throw new Error('Impossible de charger les statistiques');
+                const ds = await rs.json();
+                const v = [ds.total_trajets, ds.trajets_en_cours, ds.vehicules_actifs, ds.incidents_ouverts];
+                document.querySelectorAll('.val').forEach((el, i) => el.textContent = v[i]);
 
-<script>
-const API = '';  // Remplacer par l'URL de votre backend
+                // Trajets
+                const rt = await fetch(`${API}/api/trajets/recent`);
+                if (!rt.ok) throw new Error('Impossible de charger les trajets récents');
+                const dt = await rt.json();
+                const rows = dt.map(t => `<tr><td>${t.ligne}</td><td>${t.chauffeur_nom}</td><td><span class="badge ${t.statut==='termine'?'badge-green':'badge-orange'}">${t.statut}</span></td></tr>`).join('');
+                document.getElementById('trajets-table').innerHTML = `<table><thead><tr><th>Ligne</th><th>Chauffeur</th><th>Statut</th></tr></thead><tbody>${rows}</tbody></table>`;
+            } catch(e) {
+                setApiStatus(`Backend indisponible: ${e.message}`, '#b91c1c');
+                addMsg('bot', 'Le backend est indisponible. Vérifiez que FastAPI est lancé sur le port 8000.');
+                console.error('Erreur de chargement', e);
+            }
+        }
 
-async function loadStats() {
-  try {
-    const r = await fetch(`${API}/api/stats`);
-    const d = await r.json();
-    const grid = document.getElementById('stats');
-    const vals = [d.total_trajets, d.trajets_en_cours, d.vehicules_actifs, d.incidents_ouverts];
-    grid.querySelectorAll('.val').forEach((el, i) => el.textContent = vals[i] ?? '—');
-  } catch(e) { console.warn('Stats non disponibles'); }
-}
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const button = document.getElementById('send-btn');
+            const q = input.value.trim();
+            if(!q) return;
+            input.value = '';
+            input.disabled = true;
+            button.disabled = true;
+            addMsg('user', q);
+            addMsg('bot', 'TranspoBot réfléchit... 0s');
+            let seconds = 0;
+            const waitTimer = setInterval(() => {
+                seconds += 1;
+                updateLastBotMessage(`TranspoBot réfléchit... ${seconds}s`);
+            }, 1000);
+            
+            try {
+                const r = await fetch(`${API}/api/chat`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ question: q })
+                });
+                if (!r.ok) {
+                    let errorMessage = 'Erreur serveur';
+                    try {
+                        const errorBody = await r.json();
+                        errorMessage = errorBody.detail || errorBody.message || errorMessage;
+                    } catch (_) {}
+                    throw new Error(errorMessage);
+                }
+                const d = await r.json();
+                removeLastBotMessage();
+                if(d.data && d.data.length > 0) {
+                    addDataMsg('Résultats', d.data);
+                    document.getElementById('results-section').style.display = 'none';
+                } else {
+                    addMsg('bot', d.answer || 'Aucune donnée trouvée.');
+                    document.getElementById('results-section').style.display = 'none';
+                }
+            } catch(e) {
+                removeLastBotMessage();
+                addMsg('bot', `Erreur de connexion au chat: ${e.message}`);
+            } finally {
+                clearInterval(waitTimer);
+                input.disabled = false;
+                button.disabled = false;
+                input.focus();
+            }
+        }
 
-async function loadTrajets() {
-  try {
-    const r = await fetch(`${API}/api/trajets/recent`);
-    const data = await r.json();
-    const container = document.getElementById('trajets-table');
-    if (!data.length) { container.innerHTML = '<p style="color:#94a3b8">Aucun trajet</p>'; return; }
-    const rows = data.slice(0, 8).map(t => `
-      <tr>
-        <td>${t.ligne}</td>
-        <td>${t.chauffeur_nom}</td>
-        <td>${new Date(t.date_heure_depart).toLocaleDateString('fr')}</td>
-        <td><span class="badge ${t.statut==='termine'?'badge-green':t.statut==='en_cours'?'badge-orange':'badge-red'}">${t.statut}</span></td>
-      </tr>`).join('');
-    container.innerHTML = `<table><thead><tr><th>Ligne</th><th>Chauffeur</th><th>Date</th><th>Statut</th></tr></thead><tbody>${rows}</tbody></table>`;
-  } catch(e) { console.warn('Trajets non disponibles'); }
-}
+        function removeLastBotMessage() {
+            const list = document.querySelectorAll('#chat-box .msg.bot');
+            const last = list[list.length - 1];
+            if (last) last.remove();
+        }
 
-function ask(q) {
-  document.getElementById('user-input').value = q;
-  sendMessage();
-}
+        function updateLastBotMessage(text) {
+            const bubbles = document.querySelectorAll('#chat-box .msg.bot .bubble');
+            const lastBubble = bubbles[bubbles.length - 1];
+            if (lastBubble) {
+                lastBubble.textContent = text;
+            }
+        }
 
-function addMessage(role, text, sql = null) {
-  const box = document.getElementById('chat-box');
-  const div = document.createElement('div');
-  div.className = `msg ${role}`;
-  div.innerHTML = `<div class="bubble">${text}${sql ? `<div class="sql-preview">${sql}</div>` : ''}</div>`;
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
-}
+        function addMsg(role, text) {
+            const b = document.getElementById('chat-box');
+            b.innerHTML += `<div class="msg ${role}"><div class="bubble">${escapeHtml(text)}</div></div>`;
+            b.scrollTop = b.scrollHeight;
+        }
 
-async function sendMessage() {
-  const input = document.getElementById('user-input');
-  const question = input.value.trim();
-  if (!question) return;
-  input.value = '';
-  addMessage('user', question);
-  addMessage('bot', '⏳ Analyse en cours...');
+        function addDataMsg(title, data) {
+            const b = document.getElementById('chat-box');
+            const keys = Object.keys(data[0]);
+            const limitedRows = data.slice(0, 8);
+            const h = `<tr>${keys.map(k => `<th>${escapeHtml(k)}</th>`).join('')}</tr>`;
+            const r = limitedRows.map(row => `<tr>${keys.map(k => `<td>${escapeHtml(row[k] ?? '')}</td>`).join('')}</tr>`).join('');
+            const extra = data.length > limitedRows.length
+                ? `<div style="margin-top:0.35rem;color:#64748b;font-size:0.75rem;">${escapeHtml(data.length - limitedRows.length)} lignes supplémentaires non affichées.</div>`
+                : '';
 
-  try {
-    const r = await fetch(`${API}/api/chat`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ question })
-    });
-    const data = await r.json();
-    document.querySelector('.msg.bot:last-child').remove();
-    addMessage('bot', data.answer + (data.count !== undefined ? ` (${data.count} résultat${data.count > 1 ? 's' : ''})` : ''), data.sql);
+            b.innerHTML += `
+                <div class="msg bot">
+                    <div class="bubble">
+                        <div class="bot-title">${escapeHtml(title)}</div>
+                        <table class="chat-inline-table"><thead>${h}</thead><tbody>${r}</tbody></table>
+                        ${extra}
+                    </div>
+                </div>`;
+            b.scrollTop = b.scrollHeight;
+        }
 
-    if (data.data && data.data.length > 0) {
-      const section = document.getElementById('results-section');
-      section.style.display = 'block';
-      const keys = Object.keys(data.data[0]);
-      const rows = data.data.map(row => `<tr>${keys.map(k => `<td>${row[k] ?? ''}</td>`).join('')}</tr>`).join('');
-      document.getElementById('results-table').innerHTML = `<table><thead><tr>${keys.map(k=>`<th>${k}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
-    }
-  } catch(e) {
-    document.querySelector('.msg.bot:last-child').remove();
-    addMessage('bot', '❌ Erreur de connexion au serveur.');
-  }
-}
-
-loadStats();
-loadTrajets();
-</script>
+        window.onload = () => {
+            loadData();
+            document.getElementById('user-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+        };
+    </script>
 </body>
 </html>
